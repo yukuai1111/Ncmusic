@@ -48,8 +48,8 @@ const getMv = (id: number) => {
         console.log(MvList.value)
     })
         .catch((err) => {
-            ElMessage.error("获取MV列表失败")
-            console.log('获取MV列表失败', err)
+            ElMessage.error(("获取MV列表失败,"+(err.response?.data?.message||err.response?.data?.msg))||'获取MV列表失败')
+            console.log('获取MV列表失败：', err)
         })
 }
 //点击播放MV

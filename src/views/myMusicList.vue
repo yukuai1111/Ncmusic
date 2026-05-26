@@ -10,8 +10,7 @@
         <div class="musiclist-inner">
             <div class="title-container">
                 <h2 class="title">{{ musicListName }}</h2>
-                <el-dropdown trigger="click" @command="handleCommand"
-                    v-if="musicListCover !== 'https://p1.music.126.net/uenmBxfuLalcjtRsHkC1wQ==/109951165443522693.jpg'">
+                <el-dropdown trigger="click" @command="handleCommand">
                     <span class="expand-btn">
                         <el-icon size="20">
                             <Expand />
@@ -132,8 +131,8 @@ const getMusicList = (id: number) => {
         loading.value = false
     })
         .catch(err => {
-            ElMessage.error('获取歌单详情失败')
-            console.log('获取歌单详情失败' + err)
+            ElMessage.error(("获取歌单详情失败,"+(err.response?.data?.message||err.response?.data?.msg))||'获取歌单详情失败')
+            console.log('获取歌单详情失败：' + err)
             loading.value = false
         })
 }
@@ -168,16 +167,15 @@ const handleCommand = (command: string) => {
             })
             .then(() => {
                 console.log('删除歌单')
-                deletePlaylist(Number(id.value)).then(res => {
-                    if (res.data.code === 200) {
+                    deletePlaylist(Number(id.value)).then(res => {
                         ElMessage.success('删除成功')
                         router.back()
-                    }
-                    console.log("删除失败" + res.data)
+                        getMusicList(Number(id.value))
+                    
                 })
                     .catch(err => {
-                        ElMessage.error('删除失败')
-                        console.log('删除失败' + err)
+                        ElMessage.error(("删除失败，"+(err.response?.data?.message||err.response?.data?.msg))||'删除失败')
+                        console.log('删除失败：' + err)
                     })
             })
             .catch(() => {

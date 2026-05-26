@@ -51,8 +51,8 @@ const getAlbum = (id: number) => {
         albumLoading.value = false
     })
         .catch(err => {
-            ElMessage.error('获取专辑失败')
-            console.log('获取专辑失败' + err)
+            ElMessage.error(("获取专辑失败,"+(err.response?.data?.message||err.response?.data?.msg))||'获取专辑失败')
+            console.log('获取专辑失败：' + err)
             albumLoading.value = false
         })
 }

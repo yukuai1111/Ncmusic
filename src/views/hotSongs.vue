@@ -53,9 +53,9 @@ const getHot=(id:number)=>{
         songLoading.value=false
     })
     .catch(err=>{
-        ElMessage.error("获取热门歌曲失败")
-        console.log('获取热门歌曲失败', err)
+        ElMessage.error(("获取热门歌曲失败,"+(err.response?.data?.message||err.response?.data?.msg))||'获取热门歌曲失败')
         songLoading.value=false
+        console.log('获取热门歌曲失败', err)
     })
 }
 

@@ -184,7 +184,7 @@ const getBasic = (id: number) => {
 
     }).catch(err => {
         console.log("获取基本数据失败：" + err)
-        ElMessage.error("获取基本数据失败")
+        ElMessage.error(("获取基本数据失败,"+(err.response?.data?.message||err.response?.data?.msg))||'获取基本数据失败')
         dataLoading.value = false
     })
 }
@@ -257,7 +257,7 @@ const getRecentPlay = (id: number) => {
     })
         .catch(err => {
             console.log("获取最近播放列表失败：" + err)
-            ElMessage.error("获取最近播放列表失败")
+            ElMessage.error(("获取最近播放列表失败,"+(err.response?.data?.message||err.response?.data?.msg))||'获取最近播放列表失败')
             playLoading.value = false
         })
 
@@ -308,7 +308,7 @@ const getMusic = (id: number) => {
     })
         .catch(err => {
             console.log("获取歌单失败：" + err)
-            ElMessage.error("获取歌单失败")
+            ElMessage.error(("获取歌单失败,"+(err.response?.data?.message||err.response?.data?.msg))||'获取歌单失败')
             musicLoading.value = false
         })
 }
@@ -412,8 +412,8 @@ const handleCreate = () => {
             loadingAdd.value = false
         })
             .catch(err => {
-                ElMessage.error('创建歌单失败')
-                console.log('创建歌单失败' + err)
+                ElMessage.error(("创建歌单失败,"+(err.response?.data?.message||err.response?.data?.msg))||'创建歌单失败')
+                console.log('创建歌单失败：' + err)
                 drawerVisible.value = false
                 loadingAdd.value = false
             })
@@ -436,8 +436,8 @@ const handleCreate = () => {
             loadingAdd.value = false
         })
             .catch(err => {
-                ElMessage.error('创建歌单失败')
-                console.log('创建歌单失败' + err)
+                ElMessage.error(("创建歌单失败,"+(err.response?.data?.message||err.response?.data?.msg))||'创建歌单失败')
+                console.log('创建歌单失败：' + err)
                 drawerVisible.value = false
                 loadingAdd.value = false
             })

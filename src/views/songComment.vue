@@ -160,8 +160,8 @@ const getCommentList = (id: number) => {
 
     })
         .catch(err => {
-            ElMessage.error('获取评论失败')
-            console.log('获取评论失败' + err)
+            ElMessage.error(("获取评论失败,"+(err.response?.data?.message||err.response?.data?.msg))||'获取评论失败')
+            console.log('获取评论失败：' + err)
             commentList.value = []
             loading.value = false
         })
@@ -204,6 +204,9 @@ const handleLike = (comment: { commentId: number, liked: boolean, like: number |
                     comment.like = (((Number(comment.like.slice(0, -1)) * 10000) + 1) / 10000).toFixed(2) + '万'   //用slice把“万”去掉，然后乘上10000，在+1，最后再化成xxx"万"
                 }
             }
+        }).catch(err => {
+            ElMessage.error(("点赞评论失败,"+(err.response?.data?.message||err.response?.data?.msg))||'点赞评论失败')
+            console.log('点赞评论失败：' + err)
         })
     }
     else {
@@ -221,6 +224,9 @@ const handleLike = (comment: { commentId: number, liked: boolean, like: number |
                     comment.like = (((Number(comment.like.slice(0, -1)) * 10000) - 1) / 10000).toFixed(2) + '万'   //用slice把“万”去掉，然后乘上10000，在-1，最后再化成xxx"万"
                 }
             }
+        }).catch(err => {
+            ElMessage.error(("取消点赞评论失败,"+(err.response?.data?.message||err.response?.data?.msg))||'取消点赞评论失败')
+            console.log('取消点赞评论失败：' + err)
         })
     }
 }
@@ -252,6 +258,9 @@ const handleDelete = (commentId: number) => {
             sort.value = '2'
             getCommentList(routeId.value)
         }
+    }).catch(err => {
+        ElMessage.error(("删除评论失败,"+(err.response?.data?.message||err.response?.data?.msg))||'删除评论失败')
+        console.log('删除评论失败：' + err)
     })
 }
 onMounted(() => {

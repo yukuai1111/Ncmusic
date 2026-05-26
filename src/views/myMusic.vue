@@ -45,6 +45,7 @@ import { ref, onMounted } from 'vue'
 import { useUserStore } from '@/stores/users';
 import { useRouter } from 'vue-router'
 import { getMyMusic } from '@/api/api'
+import { ElMessage } from 'element-plus'
 const useUser = useUserStore()
 const router = useRouter()
 
@@ -77,7 +78,8 @@ const getMYMusicList = (id: number) => {
         loading.value=false
     })
         .catch(err => {
-            console.log('获取歌单失败' + err)
+            ElMessage.error(("获取歌单失败,"+(err.response?.data?.message||err.response?.data?.msg))||'获取歌单失败')
+            console.log('获取歌单失败：' + err)
             loading.value=false
         })
 

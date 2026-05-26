@@ -50,7 +50,7 @@ const getQrCode = () => {
         Qrkey.value = data.unikey || ''
     })
         .catch(err => {
-            ElMessage.error('获取二维码失败，请稍后重试')
+            ElMessage.error(("获取二维码失败,"+(err.response?.data?.message||err.response?.data?.msg))||'获取二维码失败')
             console.log(err)
         })
 }
@@ -63,17 +63,12 @@ const getQrImg = (key: string) => {
         Qrimg.value = data.qrimg || ''
     })
         .catch(err => {
-            ElMessage.error('获取二维码失败，请稍后重试')
+            ElMessage.error(("获取二维码失败,"+(err.response?.data?.message||err.response?.data?.msg))||'获取二维码失败')
             console.log(err)
         })
 }
 
-//监听key，变化了就调用img
-watch(() => Qrkey.value, (newValue) => {
-    if (newValue) {
-        getQrImg(newValue)
-    }
-})
+
 
 //对于检查二维码状态，用户登陆时间不知道，所以采用轮询
 //定义一个定时器
@@ -106,7 +101,7 @@ const checkQrStatus = (key: string) => {
                     }
                 })
                     .catch(err => {
-                        ElMessage.error('登陆失败，请稍后重试')
+                        ElMessage.error(("登陆失败,"+(err.response?.data?.message||err.response?.data?.msg))||'登陆失败')
                         console.log('获取登录状态失败：' + err)
                     })
                 clearInterval(timer.value)
@@ -121,10 +116,18 @@ const checkQrStatus = (key: string) => {
                 checkQrStatus(key)
             }
         }).catch(err => {
+            ElMessage.error(("检查二维码状态失败,"+(err.response?.data?.message||err.response?.data?.msg))||'检查二维码状态失败')
             console.log('检查二维码状态失败：' + err)
         })
     }, 3000)
 }
+
+//监听key，变化了就调用img
+watch(() => Qrkey.value, (newValue) => {
+    if (newValue) {
+        getQrImg(newValue)
+    }
+})
 
 //监听img，有了就可以检查二维码状态
 watch(() => Qrimg.value, (newValue) => {

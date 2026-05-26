@@ -34,7 +34,7 @@
                       <img :src="item.avatar" :title="item.name">
                     </div>
                     <div class="similar-name">{{ item.name }}</div>
-                    <div class="similar-fans">粉丝量：{{ item.fans }}万</div>
+                    <div class="similar-fans">粉丝量：{{ item.fans }}</div>
                   </li>
                 </ul>
               </el-dropdown-menu>
@@ -44,7 +44,7 @@
         </div>
         <p class="tag" v-if="singer.tag">{{ singer.tag }}</p>
         <div class="tip" v-if="!dataLoading && fansLoading">粉丝量加载中...</div>
-        <p class="fans" v-else>粉丝量：{{ singer.fansCnt }}万</p>
+        <p class="fans" v-else>粉丝量：{{ singer.fansCnt }}</p>
         <p class="intro">{{ singer.intro }}</p>
       </div>
     </div>
@@ -102,7 +102,7 @@ const getSinger = (id: number) => {
       name: data.artist?.name,
       cover: data.artist?.cover,
       intro: data.artist?.briefDesc,
-      tag: data.identify?.imageDesc
+      tag: data.identify?.imageDesc||''
     }
 
     coverLoading.value = false
@@ -126,15 +126,20 @@ const getFans = (id: number) => {
   getSingerFanCount(id).then(res => {
     const { data: { data } } = res
     // console.log(data.fansCnt)
+    if(data.fansCnt>10000){
+     data.fansCnt= (((data.fansCnt) / 10000).toFixed(2))+'万'
+    }else{
+      data.fansCnt = data.fansCnt
+    }
     singer.value = {
       ...singer.value,
-      fansCnt: ((data.fansCnt) / 10000).toFixed(2)
+      fansCnt: data.fansCnt
     }
     // console.log(singer.value)
     fansLoading.value = false
   })
     .catch(err => {
-      ElMessage.error("获取粉丝量失败")
+      ElMessage.error(("获取粉丝量失败,"+(err.response?.data?.message||err.response?.data?.msg))||'获取粉丝量失败')
       console.log('获取粉丝量失败', err)
       fansLoading.value = false
     })
@@ -147,16 +152,25 @@ const getSimilar = (id: number) => {
   if (!id) return
   getSimilarSingers(id).then(res => {
     const { data: { artists } } = res
-    // console.log(artists)
+    console.log(artists)
     similarSinger.value = artists.map((item: any) => {
+      if(item.fansCount>10000){
+        item.fansCount=((item.fansCount) / 10000).toFixed(2)+'万'
+      }else{
+        item.fansCount=item.fansCount
+      }
       return {
         id: item.id,
         name: item.name,
         avatar: item.picUrl,
-        fans: ((item.fansCount) / 10000).toFixed(2)
+        fans: item.fansCount
       }
     })
     // console.log(similarSinger.value)
+  })
+    .catch(err => {
+      ElMessage.error(("获取相似歌手失败,"+(err.response?.data?.message||err.response?.data?.msg))||'获取相似歌手失败')
+      console.log('获取相似歌手失败', err)
   })
 }
 //点击获取歌手详情

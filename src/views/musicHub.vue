@@ -80,7 +80,7 @@ const getRecommendList = () => {
         recommendLoading.value =false
     })
         .catch(err => {
-            ElMessage.error('获取推荐列表失败')
+            ElMessage.error(("获取推荐列表失败,"+(err.response?.data?.message||err.response?.data?.msg))||'获取推荐列表失败')
             console.log('获取推荐列表失败：' + err)
             recommendLoading.value =false
         })
@@ -115,8 +115,8 @@ const getNewSongList = () => {
         newSongLoading.value =false
     })
         .catch(err => {
-            ElMessage.error('获取新音乐失败')
-            console.log('获取新音乐失败' + err)
+            ElMessage.error(("获取新音乐失败,"+(err.response?.data?.message||err.response?.data?.msg))||'获取新音乐失败')
+            console.log('获取新音乐失败：' + err)   
             newSongLoading.value =false
         })
 }
@@ -153,8 +153,8 @@ const getSingerList = () => {
         singerLoading.value =false
     })
         .catch(err => {
-            ElMessage.error('获取歌手榜单失败')
-            console.log('获取歌手榜单失败' + err)
+            ElMessage.error(("获取歌手榜单失败,"+(err.response?.data?.message||err.response?.data?.msg))||'获取歌手榜单失败')
+            console.log('获取歌手榜单失败：' + err)   
             singerLoading.value =false
         })
 }

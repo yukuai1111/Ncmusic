@@ -123,7 +123,7 @@ const getBasic = (id: number) => {
         ruleForm.signature = data.profile.signature || ''
     }).catch(err => {
         console.log("获取基本数据失败：" + err)
-        ElMessage.error("获取基本数据失败")
+        ElMessage.error(("获取基本数据失败,"+(err.response?.data?.message||err.response?.data?.msg))||'获取基本数据失败')
 
     })
 }
@@ -222,7 +222,7 @@ const handleSubmit = () => {
                 })
                     .catch(err => {
                         console.log("更新用户信息失败：" + err)
-                        ElMessage.error("更新用户信息失败")
+                        ElMessage.error(("更新用户信息失败,"+(err.response?.data?.message||err.response?.data?.msg))||'更新用户信息失败')
                     })
             }
         })

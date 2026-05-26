@@ -33,6 +33,7 @@
 import { ref, computed, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
 import { getSingerDesc } from '@/api/api'
+import { ElMessage } from 'element-plus'
 
 const route = useRoute()
 const id = computed(() => route.query.id)
@@ -49,7 +50,7 @@ const getSingerDescData = (id: number) => {
     exprienceLoading.value = true
     getSingerDesc(id).then(res => {
         const data = res.data
-        console.log(data)
+        // console.log(data)
         singerDesc.value = {
             works: data.introduction.filter((item: any) => item.ti === '代表作品')?.map((item: any) => item.txt)[0]?.
                 replace(/●/g, '').   //去掉●
@@ -60,7 +61,13 @@ const getSingerDescData = (id: number) => {
             honor: data.introduction.filter((item: any) => item.ti === '主要成就')?.map((item: any) => item.txt)[0]?.split('\n') || [],
             exprience: data.introduction.filter((item: any) => item.ti === '演艺经历')?.map((item: any) => item.txt)[0]?.split('\n') || []
         }
-        console.log(singerDesc.value)
+        // console.log(singerDesc.value)
+        workLoading.value = false
+        honorLoading.value = false
+        exprienceLoading.value = false
+    }).catch(err => {
+        console.log("获取歌手描述失败：" + err)
+        ElMessage.error(("获取歌手描述失败,"+(err.response?.data?.message||err.response?.data?.msg))||'获取歌手描述失败')
         workLoading.value = false
         honorLoading.value = false
         exprienceLoading.value = false

@@ -81,9 +81,11 @@ const handleFollow = (item: any) => {
                     ElMessage.success("取消关注成功")
                 })
                     .catch(err => {
-                        ElMessage.error("取消关注失败")
-                        console.log("取消关注失败了", err)
+                        ElMessage.error(("取消关注失败,"+(err.response?.data?.message||err.response?.data?.msg))||'取消关注失败')
                         item.followed = true
+                        // 刷新关注列表
+                        getFollows(Number(id.value))
+                        console.log("取消关注失败了", err)
                     })
             })
     }

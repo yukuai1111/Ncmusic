@@ -63,7 +63,7 @@ const getAlbumList = (id: number) => {
         listLoading.value = false
     })
         .catch(err => {
-            ElMessage.error('获取专辑详情失败')
+            ElMessage.error(('获取专辑详情失败,'+(err.response?.data?.message||err.response?.data?.msg))||'获取专辑详情失败')
             console.log("获取专辑详情失败" + err)
             listLoading.value = false
         })

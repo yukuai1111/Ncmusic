@@ -35,8 +35,8 @@ const getMv = (id: number) => {
         loading.value = false
     })
         .catch(err => {
-            ElMessage.error("播放MV失败")
-            console.log("播放MV失败", err)
+            ElMessage.error(("播放MV失败,"+(err.response?.data?.message||err.response?.data?.msg))||'播放MV失败')
+            console.log("播放MV失败：" + err)
             loading.value = false
         })
 }

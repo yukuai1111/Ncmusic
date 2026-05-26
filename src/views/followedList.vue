@@ -66,12 +66,21 @@ const handleFollow = (item: any) => {
         //一开始就没关注
         //回关
         followArtist(item.id, 1).then(res => {
-            console.log(res.data)
-            console.log(`回关${item.name}成功`)
+            // console.log(res.data)
+            // console.log(`回关${item.name}成功`)
             ElMessage.success(res.data.followContent||"回关成功")
             item.followed = true
+            // 刷新粉丝列表
+            getFans(Number(id.value))
         })
-
+        .catch(err => {
+            ElMessage.error(("回关失败,"+(err.response?.data?.message||err.response?.data?.msg))||'回关失败')
+            item.followed = false
+            // 刷新粉丝列表
+            getFans(Number(id.value))
+            console.log("回关失败：" + err)
+        })
+        
     }
 }
 

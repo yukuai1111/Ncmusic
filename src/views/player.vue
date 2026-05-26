@@ -201,8 +201,8 @@ const getUrl = (id: number) => {
 
     })
         .catch(err => {
-            ElMessage.error('获取播放地址失败')
-            console.log('获取播放地址失败' + err)
+            ElMessage.error(("获取播放地址失败,"+(err.response?.data?.message || err.response?.data?.msg))||'获取播放地址失败')
+            console.log('获取播放地址失败：' + err)
         })
 }
 //获取歌曲元数据
@@ -336,8 +336,9 @@ const getSimilar = (id: number) => {
         console.log(similarSong.value)
         similarLoading.value = false
     })
-        .catch(() => {
-            ElMessage.error('获取相似歌曲失败')
+        .catch(err => {
+            ElMessage.error(("获取相似歌曲失败,"+(err.response?.data?.message || err.response?.data?.msg))||'获取相似歌曲失败')
+            console.log('获取相似歌曲失败：' + err)
             similarLoading.value = false
         })
 }
@@ -345,7 +346,7 @@ const getSimilar = (id: number) => {
 //喜欢/取消喜欢
 const isLike = ref<boolean>()
 const handleLike = () => {
-   
+
     // console.log('喜欢/取消喜欢' + id.value)
     if (!userStore.isLogin) {
         ElMessage.warning('您未登录，无法喜欢/取消喜欢')
@@ -356,15 +357,33 @@ const handleLike = () => {
         likeSong(Number(id.value), false).then(res => {
             console.log(res)
             isLike.value = false
+            //取消喜欢成功后，刷新喜欢列表
+            getLikeList(userStore.user.id)
 
         })
+            .catch(err => {
+                ElMessage.error(("取消喜欢失败,"+(err.response?.data?.message || err.response?.data?.msg))||'取消喜欢失败')
+                isLike.value = true
+                //取消喜欢失败后，刷新喜欢列表
+                getLikeList(userStore.user.id)
+                console.log('取消喜欢失败：' + err)
+            })
     }
     else {
         // console.log('将要喜欢')
         likeSong(Number(id.value), true).then(res => {
             console.log(res)
             isLike.value = true
+            //喜欢成功后，刷新喜欢列表
+            getLikeList(userStore.user.id)
         })
+            .catch(err => {
+                ElMessage.error(("喜欢失败,"+(err.response?.data?.message || err.response?.data?.msg))||'喜欢失败')
+                isLike.value = false
+                //喜欢失败后，刷新喜欢列表
+                getLikeList(userStore.user.id)
+                console.log('喜欢失败：' + err)
+            })
     }
 }
 
@@ -400,6 +419,10 @@ onMounted(() => {
             }
             // console.log(isLike.value)
         })
+            .catch(err => {
+                ElMessage.error('获取喜欢列表失败,' + (err.response?.data?.message || err.response?.data?.msg))
+                console.log('获取喜欢列表失败：' + err)
+            })
     }
 })
 </script>

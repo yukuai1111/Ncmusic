@@ -63,9 +63,9 @@ const getSearchList = (key: string) => {
         loading.value = false
     })
         .catch(err => {
-            ElMessage.success('搜索失败')
+            ElMessage.error(("搜索失败,"+(err.response?.data?.message||err.response?.data?.msg))||'搜索失败')
             router.back()
-            console.log('搜索失败', err)
+            console.log('搜索失败：' + err)
             loading.value = false
         })
 }

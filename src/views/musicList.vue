@@ -173,9 +173,17 @@ const handleSubscribe = () => {
         //将要收藏
         subscribePlaylist(Number(id.value), 1).then(res => {
             console.log(res.data)
+           ElMessage.success('收藏成功')
+           subscribed.value = true
+           if (typeof subscribedCount.value === "number") {
+                subscribedCount.value = String(Number(subscribedCount.value) + 1)
+           }else{
+            subscribedCount.value = Number((Number(subscribedCount.value.slice(0,-1))*10000+1)/10000).toFixed(2)+'万'
+           }
         })
             .catch(err => {
-                ElMessage.error('收藏失败')
+                // console.log(err.code)
+                ElMessage.error('收藏失败,'+(err.response?.data?.message||err.response?.data?.msg))
                 console.log('收藏失败' + err)
             })
     } else {
