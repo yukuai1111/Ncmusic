@@ -58,7 +58,7 @@
                     <template #footer>
                         <div class="drawer-footer">
                             <el-button @click="drawerVisible = false">取消</el-button>
-                            <el-button type="primary" @click="handleDesc" >
+                            <el-button type="primary" @click="handleDesc">
                                 确认更新
                             </el-button>
                         </div>
@@ -97,15 +97,15 @@ const router = useRouter()
 //定义歌单详情
 let musicList = ref<{ id: number, name: string, author: string, time: number, album: string, index: number }[]>([])
 //定义歌单名字
-let musicListName = ref('')
+let musicListName = ref<string>('')
 //定义歌单的封面
-let musicListCover = ref('')
+let musicListCover = ref<string>('')
 //定义歌单的简介
-let musicListDesc = ref('')
+let musicListDesc = ref<string>('')
 //获取路由的传来的id
 let id = computed(() => route.query.id)
 //定义加载状态
-let loading = ref(false)
+let loading = ref<boolean>(false)
 //获取歌单详情
 const getMusicList = (id: number) => {
     loading.value = true
@@ -117,11 +117,20 @@ const getMusicList = (id: number) => {
         musicListCover.value = playList.coverImgUrl || ''
         musicListDesc.value = playList.description || ''
         // console.log(musicListCover.value)
-        musicList.value = playList.tracks.map((item: any, index: number) => {
+        musicList.value = playList.tracks.map((item: {
+            id: number,
+            name: string,
+            ar: { name: string }[],
+            artists: { name: string }[],
+            dt: number,
+            duration: number,
+            al: { name: string },
+            album: { name: string }},
+            index: number) => {
             return {
                 id: item.id,
                 name: item.name,
-                author: (item.ar || item.artists || []).map((item: any) => item.name).join('/'),  //作者可能有多个，用/连接起来
+                author: (item.ar || item.artists || []).map((item: {name:string}) => item.name).join('/'),  //作者可能有多个，用/连接起来
                 time: item.dt || item.duration || 0,
                 album: (item.al || item.album).name || '',
                 index: index + 1,
@@ -131,7 +140,7 @@ const getMusicList = (id: number) => {
         loading.value = false
     })
         .catch(err => {
-            ElMessage.error(("获取歌单详情失败,"+(err.response?.data?.message||err.response?.data?.msg))||'获取歌单详情失败')
+            ElMessage.error((err.response?.data?.message || err.response?.data?.msg) || '获取歌单详情失败')
             console.log('获取歌单详情失败：' + err)
             loading.value = false
         })
@@ -150,7 +159,7 @@ const handlePlay = (id: number) => {
 
 
 //编辑歌单框可视
-const drawerVisible = ref(false)
+const drawerVisible = ref<boolean>(false)
 //点击下拉菜单，进行操作
 const handleCommand = (command: string) => {
     if (command === 'edit') {
@@ -167,14 +176,14 @@ const handleCommand = (command: string) => {
             })
             .then(() => {
                 console.log('删除歌单')
-                    deletePlaylist(Number(id.value)).then(res => {
-                        ElMessage.success('删除成功')
-                        router.back()
-                        getMusicList(Number(id.value))
-                    
+                deletePlaylist(Number(id.value)).then(res => {
+                    ElMessage.success('删除成功')
+                    router.back()
+                    getMusicList(Number(id.value))
+
                 })
                     .catch(err => {
-                        ElMessage.error(("删除失败，"+(err.response?.data?.message||err.response?.data?.msg))||'删除失败')
+                        ElMessage.error((err.response?.data?.message || err.response?.data?.msg) || '删除失败')
                         console.log('删除失败：' + err)
                     })
             })
@@ -231,20 +240,20 @@ const handleName = () => {
                 })
                 return
             }
-          updatePlaylistName({
-            id:Number(id.value),
-            name:value
-          }).then(res=>{
-            console.log(res)
-            if(res.data.code===200){
-                musicListName.value=value
-                ElMessage.success('修改成功')
-            }
-          })
-          .catch(err=>{
-            ElMessage.error('修改失败')
-            console.log('修改失败' + err)
-          })
+            updatePlaylistName({
+                id: Number(id.value),
+                name: value
+            }).then(res => {
+                console.log(res)
+                if (res.data.code === 200) {
+                    musicListName.value = value
+                    ElMessage.success('修改成功')
+                }
+            })
+                .catch(err => {
+                    ElMessage.error('修改失败')
+                    console.log('修改失败' + err)
+                })
         })
         .catch(() => {
             ElMessage({
@@ -255,27 +264,27 @@ const handleName = () => {
 }
 
 //按钮加载
-const loadingDesc = ref(false)
+const loadingDesc = ref<boolean>(false)
 //更新歌单描述
 const handleDesc = () => {
-    loadingDesc.value=true
+    loadingDesc.value = true
     updatePlaylistDesc({
-        id:Number(id.value),
-        desc:musicListDesc.value
-    }).then(res=>{
+        id: Number(id.value),
+        desc: musicListDesc.value
+    }).then(res => {
         console.log(res)
-        if(res.data.code===200){
+        if (res.data.code === 200) {
             ElMessage.success('修改描述成功')
-            drawerVisible.value=false
-            loadingDesc.value=false
+            drawerVisible.value = false
+            loadingDesc.value = false
         }
     })
-    .catch(err=>{
-        ElMessage.error('修改描述失败')
-        console.log('修改描述失败' + err)
-        drawerVisible.value=false
-        loadingDesc.value=false
-    })
+        .catch(err => {
+            ElMessage.error('修改描述失败')
+            console.log('修改描述失败' + err)
+            drawerVisible.value = false
+            loadingDesc.value = false
+        })
 }
 //监视路由参数
 watch(() => id.value, (newValue, oldValue) => {

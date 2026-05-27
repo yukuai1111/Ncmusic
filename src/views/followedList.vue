@@ -8,15 +8,15 @@
                 <span>返回</span>
             </div>
             <h1 class="title">粉丝列表</h1>
-             <div class="tip" v-if="fans.length === 0">
+            <div class="tip" v-if="fans.length === 0">
                 <el-icon size="200">
                     <Box />
                 </el-icon>
                 <p>暂无粉丝</p>
                 <span>被你喜欢的用户和歌手关注到这里</span>
             </div>
-             <ul class="follows-list">
-                <li v-for="item in fans" :key="item.id" class="follows-item"> 
+            <ul class="follows-list">
+                <li v-for="item in fans" :key="item.id" class="follows-item">
                     <div class="avatar">
                         <img :src="item.avatar" :title="item.name">
                     </div>
@@ -31,9 +31,9 @@
                         {{ item.followed ? '互相关注' : '回关' }}
                     </el-button>
                     <el-button type="danger" @click="handleDelete(item)">
-                         <el-icon size="20">
-                        <Delete />
-                    </el-icon>
+                        <el-icon size="20">
+                            <Delete />
+                        </el-icon>
                     </el-button>
                 </li>
             </ul>
@@ -46,19 +46,19 @@ import { computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { followArtist } from '@/api/api'
 import { useFollowStore } from '@/stores/follow'
-import {storeToRefs} from 'pinia'
-import { ElMessage} from 'element-plus'
+import { storeToRefs } from 'pinia'
+import { ElMessage } from 'element-plus'
 const followStore = useFollowStore()
 const { fans } = storeToRefs(followStore)
-const {getFans}=followStore
+const { getFans } = followStore
 const route = useRoute()
 const router = useRouter()
 const id = computed(() => route.query.id)
 
 
 //关注/取消关注
-const handleFollow = (item: any) => {
-    console.log(item.id, item.followed)
+const handleFollow = (item: { id: number, name: string, avatar: string, signature: string, followed: boolean }) => {
+    // console.log(item.id, item.followed)
     if (item.followed) {
         //一开始有关注，做不了操作
         return
@@ -68,24 +68,27 @@ const handleFollow = (item: any) => {
         followArtist(item.id, 1).then(res => {
             // console.log(res.data)
             // console.log(`回关${item.name}成功`)
-            ElMessage.success(res.data.followContent||"回关成功")
-            item.followed = true
-            // 刷新粉丝列表
-            getFans(Number(id.value))
+            if (res.data.code === 200) {
+                ElMessage.success(res.data.followContent || "回关成功")
+                item.followed = true
+            }
+            else {
+                ElMessage.error(res.data.msg || res.data.message || "回关失败")
+                item.followed = false
+            }
+
         })
-        .catch(err => {
-            ElMessage.error(("回关失败,"+(err.response?.data?.message||err.response?.data?.msg))||'回关失败')
-            item.followed = false
-            // 刷新粉丝列表
-            getFans(Number(id.value))
-            console.log("回关失败：" + err)
-        })
-        
+            .catch(err => {
+                ElMessage.error((err.response?.data?.message || err.response?.data?.msg) || '回关失败')
+                item.followed = false
+                console.log("回关失败：" + err)
+            })
+
     }
 }
 
 //移出粉丝
-const handleDelete=(item:any)=>{
+const handleDelete = (item:{ id: number, name: string, avatar: string, signature: string, followed: boolean }) => {
     console.log(`移出${item.name}`)
 }
 onMounted(async () => {

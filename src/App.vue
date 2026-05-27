@@ -22,11 +22,11 @@
             <div class="user-menu" v-else>
               <el-dropdown @command="handleCommand">
                 <div class="user-avatar">
-                  <img :src="useUser.user.avatar?useUser.user.avatar:'https://ts2.tc.mm.bing.net/th/id/OIP-C.xA5QX2crc3fR5d0DIH-oDQAAAA?rs=1&pid=ImgDetMain&o=7&rm=3'" alt="用户头像"></img>
+                  <img :src="useUser?.user?.avatar?useUser.user.avatar:'https://ts2.tc.mm.bing.net/th/id/OIP-C.xA5QX2crc3fR5d0DIH-oDQAAAA?rs=1&pid=ImgDetMain&o=7&rm=3'" alt="用户头像"></img>
                 </div>
                 <template #dropdown>
                   <el-dropdown-menu>
-                    <el-dropdown-item command="selfCenter">{{ useUser.user.name }}</el-dropdown-item>
+                    <el-dropdown-item command="selfCenter">{{ useUser?.user?.name || '用户' }}</el-dropdown-item>
                     <el-dropdown-item command="logout">退出登录</el-dropdown-item>
                   </el-dropdown-menu>
                 </template>
@@ -101,12 +101,6 @@ const handleCommand = (command: string) => {
     router.push('/selfCenter')
   }
 }
-
-onMounted(() => {
-  useUser.initUser()
-  // console.log(useUser.isLogin)
-  // console.log(useUser.user)
-})
 </script>
 
 <style scoped>

@@ -35,20 +35,20 @@ const getMv = (id: number) => {
     getMvList(id).then(res => {
         const { data: { mvs } } = res
         // console.log(mvs)
-        MvList.value = mvs.map((item: any) => {
+        MvList.value = mvs.map((item: {id: number, name: string, imgurl: string, duration: number, playCount: number, publishTime: string}) => {
             return {
                 id: item.id,
                 name: item.name,
                 cover: item.imgurl,
                 duration: item.duration,
-                playcount: ((item.playCount)/10000).toFixed(2),
+                playcount: item.playCount >= 10000 ? (item.playCount / 10000).toFixed(2) + '万' : item.playCount,
                 publishTime: item.publishTime,
             }
         })
         console.log(MvList.value)
     })
         .catch((err) => {
-            ElMessage.error(("获取MV列表失败,"+(err.response?.data?.message||err.response?.data?.msg))||'获取MV列表失败')
+            ElMessage.error((err.response?.data?.message || err.response?.data?.msg)||'获取MV列表失败')
             console.log('获取MV列表失败：', err)
         })
 }

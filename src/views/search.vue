@@ -37,7 +37,7 @@ const route = useRoute()
 const router = useRouter()
 const keyWord = computed(() => (route.query.keyword || '').toString())
 // console.log(keyWord.value)
-const loading = ref(false)
+const loading = ref<boolean>(false)
 //定义搜索的数据
 const searchList = ref<{ id: number, name: string, author: string, album: string, time: number }[]>([])
 //获取搜索的数据
@@ -50,11 +50,11 @@ const getSearchList = (key: string) => {
     getSearch(key, 20).then(res => {
         const { data: { result: { songs } } } = res
         // console.log(songs)
-        searchList.value = songs.map((item: any) => {
+        searchList.value = songs.map((item: { id: number, name: string, ar: { name: string }[], al: { name: string }, dt: number }) => {
             return {
                 id: item.id,
                 name: item.name,
-                author: item.ar.map((item: any) => item.name).join('/'),
+                author: item.ar.map((item: { name: string }) => item.name).join('/'),
                 album: item.al.name || '',
                 time: item.dt || 0
             }
@@ -63,7 +63,7 @@ const getSearchList = (key: string) => {
         loading.value = false
     })
         .catch(err => {
-            ElMessage.error(("搜索失败,"+(err.response?.data?.message||err.response?.data?.msg))||'搜索失败')
+            ElMessage.error((err.response?.data?.message || err.response?.data?.msg)||'搜索失败')
             router.back()
             console.log('搜索失败：' + err)
             loading.value = false

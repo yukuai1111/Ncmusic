@@ -83,13 +83,13 @@ const id = computed(() => route.query.id)
 // console.log(id.value)
 
 //加载中
-const coverLoading = ref(false)
-const dataLoading = ref(false)
-const fansLoading = ref(true)
+const coverLoading = ref<boolean>(false)
+const dataLoading = ref<boolean>(false)
+const fansLoading = ref<boolean>(true)
 
 
 //歌手数据
-const singer = ref<any>({})
+const singer = ref<{name?: string, cover?: string, intro?: string, tag?: string, fansCnt?:number}>({})
 //获取歌手详情
 const getSinger = (id: number) => {
   if (!id) return
@@ -139,37 +139,33 @@ const getFans = (id: number) => {
     fansLoading.value = false
   })
     .catch(err => {
-      ElMessage.error(("获取粉丝量失败,"+(err.response?.data?.message||err.response?.data?.msg))||'获取粉丝量失败')
+      ElMessage.error((err.response?.data?.message||err.response?.data?.msg)||'获取粉丝量失败')
       console.log('获取粉丝量失败', err)
       fansLoading.value = false
     })
 }
 
 //相似歌手数据
-const similarSinger = ref<{ id: number, name: string, avatar: string, fans: string }[]>([])
+const similarSinger = ref<{ id: number, name: string, avatar: string, fans: string|number }[]>([])
 //获取相似歌手
 const getSimilar = (id: number) => {
   if (!id) return
   getSimilarSingers(id).then(res => {
     const { data: { artists } } = res
     console.log(artists)
-    similarSinger.value = artists.map((item: any) => {
-      if(item.fansCount>10000){
-        item.fansCount=((item.fansCount) / 10000).toFixed(2)+'万'
-      }else{
-        item.fansCount=item.fansCount
-      }
+    similarSinger.value = artists.map((item: {id: number, name: string, picUrl: string, fansCount: number}) => {
+     const formatFans=item.fansCount>10000?(item.fansCount/10000).toFixed(2)+'万':item.fansCount
       return {
         id: item.id,
         name: item.name,
         avatar: item.picUrl,
-        fans: item.fansCount
+        fans: formatFans
       }
     })
     // console.log(similarSinger.value)
   })
     .catch(err => {
-      ElMessage.error(("获取相似歌手失败,"+(err.response?.data?.message||err.response?.data?.msg))||'获取相似歌手失败')
+      ElMessage.error((err.response?.data?.message||err.response?.data?.msg)||'获取相似歌手失败')
       console.log('获取相似歌手失败', err)
   })
 }

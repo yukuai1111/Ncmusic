@@ -10,7 +10,7 @@
         <div class="musiclist-inner">
             <div class="title-container">
                 <h2 class="title">{{ musicListName }}</h2>
-                <div class="actions" v-if="musicListName&&musicList.length!==0">
+                <div class="actions" v-if="musicListName && musicList.length !== 0">
                     <span class="action-btn">
                         <span @click="handleSubscribe">
                             <el-icon v-if="!subscribed" size="24">
@@ -86,15 +86,15 @@ let musicList = ref<
         index: number,
     }[]>([])
 //定义歌单名字
-let musicListName = ref('')
+let musicListName = ref<string>('')
 //定义收藏状态
-let subscribed = ref(false)
+let subscribed = ref<boolean>(false)
 //定义收藏数
-let subscribedCount = ref('')
+let subscribedCount = ref<string>('')
 //获取路由的传来的id
 let id = computed(() => route.query.id)
 //定义加载状态
-let loading = ref(false)
+let loading = ref<boolean>(false)
 //获取歌单详情
 const getMusicList = (id: number) => {
     loading.value = true
@@ -104,24 +104,29 @@ const getMusicList = (id: number) => {
         console.log(playList)
         musicListName.value = playList.name || '歌单'
         subscribed.value = playList.subscribed
-        subscribedCount.value = playList.subscribedCount
+        subscribedCount.value = playList.subscribedCount > 10000 ? Number((playList.subscribedCount / 10000).toFixed(2)) + '万' : playList.subscribedCount.toString()
 
-        if (playList.subscribedCount > 10000) {
-            subscribedCount.value = Number((playList.subscribedCount / 10000).toFixed(2)) + '万'
-        }
-
-        musicList.value = playList.tracks.map((item: any, index: number) => {
+        musicList.value = playList.tracks.map((item: {
+            id: number,
+            name: string,
+            ar: { name: string }[],
+            artists: { name: string }[],
+            dt: number,
+            duration?: number,
+            al: { name: string },
+            album: {name:string},
+        }, index: number) => {
             return {
                 id: item.id,
                 name: item.name,
-                author: (item.ar || item.artists || []).map((item: any) => item.name).join('/'),  //作者可能有多个，用/连接起来
+                author: (item.ar || item.artists || []).map((item: { name: string }) => item.name).join('/'),  //作者可能有多个，用/连接起来
                 time: item.dt || item.duration || 0,
                 album: (item.al || item.album).name || '',
                 index: index + 1,
             }
         }) || []
 
-        // console.log(musicList.value)
+        console.log(musicList.value)
         loading.value = false
         //获取相似歌单
         getSimilar(id)
@@ -151,14 +156,14 @@ const getSimilar = (id: number) => {
     if (!id) return
     getSimilarPlaylists(id).then(res => {
         const { data: { playlists } } = res
-        // console.log(playlists)
-        similarList.value = playlists.map((item: any) => {
+        console.log(playlists)
+        similarList.value = playlists.map((item: { id: number, name: string, coverImgUrl: string, tags: string[],playCount: number }) => {
             return {
                 id: item.id,
                 name: item.name,
                 cover: item.coverImgUrl,
-                tag: item.tags.map((item: any) => item).join('/'),
-                playcount: Number((item.playCount / 10000).toFixed(2))
+                tag: item.tags.map((item: string) => item).join('/'),
+                playcount: item.playCount > 10000 ? (item.playCount / 10000).toFixed(2) + '万' : item.playCount
             }
         })
         // console.log(similarList.value)
@@ -172,24 +177,24 @@ const handleSubscribe = () => {
     if (subscribed.value === false) {
         //将要收藏
         subscribePlaylist(Number(id.value), 1).then(res => {
-            console.log(res.data)
-           ElMessage.success('收藏成功')
-           subscribed.value = true
-           if (typeof subscribedCount.value === "number") {
+            // console.log(res.data)
+            ElMessage.success('收藏成功')
+            subscribed.value = true
+            if (typeof subscribedCount.value === "number") {
                 subscribedCount.value = String(Number(subscribedCount.value) + 1)
-           }else{
-            subscribedCount.value = Number((Number(subscribedCount.value.slice(0,-1))*10000+1)/10000).toFixed(2)+'万'
-           }
+            } else {
+                subscribedCount.value = Number((Number(subscribedCount.value.slice(0, -1)) * 10000 + 1) / 10000).toFixed(2) + '万'
+            }
         })
             .catch(err => {
                 // console.log(err.code)
-                ElMessage.error('收藏失败,'+(err.response?.data?.message||err.response?.data?.msg))
+                ElMessage.error((err.response?.data?.message || err.response?.data?.msg) || '收藏失败')
                 console.log('收藏失败' + err)
             })
     } else {
         //将要取消收藏
         subscribePlaylist(Number(id.value), 0).then(res => {
-            console.log(res.data)
+            // console.log(res.data)
             if (res.data.code === 200) {
                 ElMessage.success('取消收藏成功')
                 subscribed.value = false

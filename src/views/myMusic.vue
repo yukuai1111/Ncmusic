@@ -49,7 +49,7 @@ import { ElMessage } from 'element-plus'
 const useUser = useUserStore()
 const router = useRouter()
 
-const loading=ref(false)
+const loading=ref<boolean>(false)
 //去登录
 const handleLogin = () => {
     router.push('/login')
@@ -64,7 +64,7 @@ const getMYMusicList = (id: number) => {
     getMyMusic(id).then(res => {
         const { data: { playlist } } = res
         console.log(playlist)
-        myMusicList.value = playlist.map((item: any) => {
+        myMusicList.value = playlist.map((item: { id: number, name: string, coverImgUrl: string, trackCount: number, privacy: number }) => {
             return {
                 id: item.id,
                 name: item.name,
@@ -78,7 +78,7 @@ const getMYMusicList = (id: number) => {
         loading.value=false
     })
         .catch(err => {
-            ElMessage.error(("获取歌单失败,"+(err.response?.data?.message||err.response?.data?.msg))||'获取歌单失败')
+            ElMessage.error((err.response?.data?.message||err.response?.data?.msg)||'获取歌单失败')
             console.log('获取歌单失败：' + err)
             loading.value=false
         })
@@ -99,7 +99,7 @@ onMounted(() => {
     if (useUser.isLogin) {
         // console.log(myMusicList.value)
         // console.log(useUser.user.id)
-        getMYMusicList(useUser.user.id)
+        getMYMusicList(useUser?.user?.id||0)
     }
 })
 </script>

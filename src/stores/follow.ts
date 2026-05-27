@@ -13,7 +13,7 @@ export const useFollowStore = defineStore('follow', () => {
         const res = await getFollowList(uid)
         const { data: { follow } } = res
         // console.log(follow)
-        follows.value = follow.map((item: any) => {
+        follows.value = follow.map((item:{userId:number,nickname:string,avatarUrl:string,signature:string,followed:boolean}) => {
             return {
                 id: item.userId,
                 name: item.nickname,
@@ -29,7 +29,7 @@ export const useFollowStore = defineStore('follow', () => {
         if (!uid) return
         const res = await getFanList(uid)
        const {data:{followeds}}=res
-       fans.value=followeds.map((item: any) => {
+       fans.value=followeds.map((item:{userId:number,nickname:string,avatarUrl:string,signature:string,followed:boolean}) => {
             return {
                 id: item.userId,
                 name: item.nickname,

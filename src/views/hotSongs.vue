@@ -29,7 +29,7 @@ const route = useRoute()
 const router = useRouter()
 
 const id=computed(()=>route.query.id)
-const songLoading=ref(false)
+const songLoading=ref<boolean>(false)
 //歌曲数据
 const hotSongs = ref<{id:number,name:string,author:string,time:number,album:string,index:number}[]>([])
 
@@ -39,13 +39,13 @@ const getHot=(id:number)=>{
     getSingerHotSongs(id).then(res=>{
         const {data:{songs}}=res
         // console.log(songs)
-        hotSongs.value=songs.map((item:any,index:number)=>{
+        hotSongs.value=songs.map((item:{id:number,name:string,ar:{id:number,name:string}[],dt:number,al:{id:number,name:string}},index:number)=>{
             return {
                 id: item.id,
                 name: item.name,
-                author: (item.ar || item.artists || []).map((item: any) => item.name).join('/'),  //作者可能有多个，用/连接起来
-                time: item.dt || item.duration || 0,
-                album: (item.al || item.album).name || '',
+                author: (item.ar || []).map((item: any) => item.name).join('/'),  //作者可能有多个，用/连接起来
+                time: item.dt || 0,
+                album: (item.al ||[]).name || '',
                 index: index + 1
             }
         })
@@ -53,7 +53,7 @@ const getHot=(id:number)=>{
         songLoading.value=false
     })
     .catch(err=>{
-        ElMessage.error(("获取热门歌曲失败,"+(err.response?.data?.message||err.response?.data?.msg))||'获取热门歌曲失败')
+        ElMessage.error((err.response?.data?.message||err.response?.data?.msg)||'获取热门歌曲失败')
         songLoading.value=false
         console.log('获取热门歌曲失败', err)
     })

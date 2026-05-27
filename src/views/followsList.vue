@@ -51,7 +51,7 @@ const { getFollows } = followStore   //方法不用
 
 
 //关注/取消关注
-const handleFollow = (item: any) => {
+const handleFollow = (item: { id: number, name: string, avatar: string, signature: string, followed: boolean }) => {
     if (item.followed) {
         //一开始就关注了，问是否取消关注
         ElMessageBox.confirm(
@@ -81,7 +81,7 @@ const handleFollow = (item: any) => {
                     ElMessage.success("取消关注成功")
                 })
                     .catch(err => {
-                        ElMessage.error(("取消关注失败,"+(err.response?.data?.message||err.response?.data?.msg))||'取消关注失败')
+                        ElMessage.error((err.response?.data?.message||err.response?.data?.msg)||'取消关注失败')
                         item.followed = true
                         // 刷新关注列表
                         getFollows(Number(id.value))

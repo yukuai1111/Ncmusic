@@ -24,7 +24,7 @@
                     <!-- 用户信息框 -->
                     <div class="user-info">
                         <div class="name">
-                            <span>{{ useUser.user.name }}</span>
+                            <span>{{ useUser?.user?.name || '用户' }}</span>
                             <el-button type="primary" :icon="Edit" @click="handleData">
                                 编辑资料
                             </el-button>
@@ -152,16 +152,16 @@ const useUser = useUserStore()
 const router = useRouter()
 
 //加载中状态
-const dataLoading = ref(false)
-const musicLoading = ref(false)
+const dataLoading = ref<boolean>(false)
+const musicLoading = ref<boolean>(false)
 
 
 //基本数据
-const nodes = ref('')             //笔记
-const followds = ref('')            //粉丝
-const follows = ref('')            //关注
-const areaName = ref('')            //地区名称
-const level = ref('')           //等级
+const nodes = ref<number>(0)             //笔记
+const followds = ref<number>(0)            //粉丝
+const follows = ref<number>(0)            //关注
+const areaName = ref<string>('')            //地区名称
+const level = ref<string>('')           //等级
 //获取基本数据
 const getBasic = (id: number) => {
     if (!id) return
@@ -184,7 +184,7 @@ const getBasic = (id: number) => {
 
     }).catch(err => {
         console.log("获取基本数据失败：" + err)
-        ElMessage.error(("获取基本数据失败,"+(err.response?.data?.message||err.response?.data?.msg))||'获取基本数据失败')
+        ElMessage.error((err.response?.data?.message || err.response?.data?.msg) || '获取基本数据失败')
         dataLoading.value = false
     })
 }
@@ -192,11 +192,11 @@ const getBasic = (id: number) => {
 
 //更换头像,仅作页面展示
 //鼠标hover显示修改头像
-const changeAvatar = ref(false)
+const changeAvatar = ref<boolean>(false)
 //定义头像数据
-const avatarBase64 = ref('')
+const avatarBase64 = ref<string>('')
 //上传前校验
-const beforeAvatarUpload = (file: any) => {
+const beforeAvatarUpload = (file: File) => {
     if (!file.type.startsWith('image/')) {
         ElMessage.error('请上传图片文件')
         return false
@@ -218,9 +218,11 @@ const handleAvatar = ({ file }: { file: File }) => {
             // console.log(Base64)
             avatarBase64.value = Base64
             //本地存储
-            useUser.user.avatar = avatarBase64.value
-            localStorage.setItem('user', JSON.stringify(useUser.user))
-            ElMessage.success('头像更换成功')
+            if (useUser?.user) {
+                useUser.user.avatar = avatarBase64.value
+                localStorage.setItem('user', JSON.stringify(useUser.user))
+                ElMessage.success('头像更换成功')
+            }
         }
         reader.readAsDataURL(file)
     } catch (err) {
@@ -234,7 +236,7 @@ const handleAvatar = ({ file }: { file: File }) => {
 
 
 //最近播放列表
-const playLoading = ref(false)
+const playLoading = ref<boolean>(false)
 const playList = ref<{ id: number, name: string, author: string, album: string, time: number, index: number }[]>([])
 const getRecentPlay = (id: number) => {
     if (!id) return
@@ -242,11 +244,19 @@ const getRecentPlay = (id: number) => {
     getRecentPlayList().then(res => {
         const { data: { data: { list } } } = res
         // console.log(list)
-        playList.value = (list.map((item: any, index: number) => {
+        playList.value = (list.map((item: {
+            resourceId: number,
+            data: {
+                name: string,
+                ar: { name: string }[],
+                al: { name: string },
+                dt: number
+            }
+        }, index: number) => {
             return {
                 id: item.resourceId,
                 name: item.data.name,
-                author: item.data.ar.map((item: any) => item.name).join('/'),
+                author: item.data.ar.map((item: { name: string }) => item.name).join('/'),
                 album: item.data.al.name,
                 time: item.data.dt,
                 index: index + 1
@@ -257,7 +267,7 @@ const getRecentPlay = (id: number) => {
     })
         .catch(err => {
             console.log("获取最近播放列表失败：" + err)
-            ElMessage.error(("获取最近播放列表失败,"+(err.response?.data?.message||err.response?.data?.msg))||'获取最近播放列表失败')
+            ElMessage.error((err.response?.data?.message || err.response?.data?.msg) || '获取最近播放列表失败')
             playLoading.value = false
         })
 
@@ -275,40 +285,56 @@ const getMusic = (id: number) => {
     musicLoading.value = true
     getMyMusic(id).then(res => {
         const { data: { playlist } } = res
-        // console.log(playlist)
+        console.log(playlist)
         //创建的歌单
-        myMusic.value = playlist.filter((item: any) => item.subscribed === false || item.subscribed === null).map((item: any) => {
-            return {
-                id: item.id,
-                name: item.name,
-                cover: item.coverImgUrl,
-                count: item.playCount,
-                updateTime: item.updateTime,
-                privacy: item.privacy
-            }
-        })
+        myMusic.value = playlist.filter((item: { subscribed: boolean | null }) => item.subscribed === false || item.subscribed === null)
+            .map((item: {
+                id: number,
+                name: string,
+                coverImgUrl: string,
+                playCount: number,
+                updateTime: number,
+                privacy: number
+            }) => {
+                return {
+                    id: item.id,
+                    name: item.name,
+                    cover: item.coverImgUrl,
+                    count: item.playCount,
+                    updateTime: item.updateTime,
+                    privacy: item.privacy
+                }
+            })
         //按照时间排序（越新越前<降序>）
-        myMusic.value = myMusic.value.sort((a: any, b: any) => {
+        myMusic.value = myMusic.value.sort((a: { updateTime: number }, b: { updateTime: number }) => {
             return b.updateTime - a.updateTime
         })
         // console.log(myMusic.value)
 
 
         //收藏的歌单
-        otherMusic.value = playlist.filter((item: any) => item.subscribed === true).map((item: any) => {
-            return {
-                id: item.id,
-                name: item.name,
-                cover: item.coverImgUrl,
-                count: item.playCount
-            }
-        })
+        otherMusic.value = playlist.filter((item: { subscribed: boolean }) => item.subscribed === true)
+            .map((item:
+                {
+                    id: number,
+                    name: string,
+                    coverImgUrl: string,
+                    playCount: number,
+                }
+            ) => {
+                return {
+                    id: item.id,
+                    name: item.name,
+                    cover: item.coverImgUrl,
+                    count: item.playCount
+                }
+            })
         // console.log(otherMusic.value)
         musicLoading.value = false
     })
         .catch(err => {
             console.log("获取歌单失败：" + err)
-            ElMessage.error(("获取歌单失败,"+(err.response?.data?.message||err.response?.data?.msg))||'获取歌单失败')
+            ElMessage.error((err.response?.data?.message || err.response?.data?.msg) || '获取歌单失败')
             musicLoading.value = false
         })
 }
@@ -343,7 +369,7 @@ const handleFollowed = () => {
     router.push({
         path: '/followedList',
         query: {
-            id: useUser.user.id
+            id: useUser?.user?.id || 0
         }
     })
 }
@@ -352,7 +378,7 @@ const handleFollows = () => {
     router.push({
         path: '/followsList',
         query: {
-            id: useUser.user.id
+            id: useUser?.user?.id || 0
         }
     })
 }
@@ -360,7 +386,7 @@ const handleFollows = () => {
 
 
 //新建歌单数据
-const listForm = ref({
+const listForm = ref<{ name: string, privacy: boolean }>({
     name: '',
     privacy: false,
 })
@@ -373,9 +399,9 @@ const rule = reactive({
     ],
 })
 //弹窗
-const drawerVisible = ref(false)
+const drawerVisible = ref<boolean>(false)
 //按钮加载
-const loadingAdd = ref(false)
+const loadingAdd = ref<boolean>(false)
 //新建歌单
 const handleAdd = () => {
     //清空表单
@@ -412,7 +438,7 @@ const handleCreate = () => {
             loadingAdd.value = false
         })
             .catch(err => {
-                ElMessage.error(("创建歌单失败,"+(err.response?.data?.message||err.response?.data?.msg))||'创建歌单失败')
+                ElMessage.error((err.response?.data?.message || err.response?.msg) || '创建歌单失败')
                 console.log('创建歌单失败：' + err)
                 drawerVisible.value = false
                 loadingAdd.value = false
@@ -436,7 +462,7 @@ const handleCreate = () => {
             loadingAdd.value = false
         })
             .catch(err => {
-                ElMessage.error(("创建歌单失败,"+(err.response?.data?.message||err.response?.data?.msg))||'创建歌单失败')
+                ElMessage.error((err.response?.data?.message || err.response?.msg) || '创建歌单失败')
                 console.log('创建歌单失败：' + err)
                 drawerVisible.value = false
                 loadingAdd.value = false
@@ -444,16 +470,15 @@ const handleCreate = () => {
     }
 }
 onMounted(() => {
+
     if (!useUser.isLogin) {
         router.push('/')
     } else {
-        getBasic(useUser.user.id)
-        getMusic(useUser.user.id)
-        useUser.initUser()
-        getRecentPlay(useUser.user.id)
-        // console.log(useUser.user)
+        getBasic(useUser?.user?.id || 0)
+        getMusic(useUser?.user?.id || 0)
+        getRecentPlay(useUser?.user?.id || 0)
+        // console.log(useUser?.user)
     }
-
 })
 </script>
 

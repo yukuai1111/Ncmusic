@@ -114,12 +114,12 @@ const userStore = useUserStore()
 const dialogVisible = ref(false)
 
 //定义歌曲详情数据
-let songCover = ref('')
-let songName = ref('')
-let songAuthor = ref('')
-let songAlbum = ref('')
-let songLyric = ref<any>([])
-let currentIndex = ref(-1)   //当前选中的歌词索引，先是-1（取不到）
+let songCover = ref<string>('')
+let songName = ref<string>('')
+let songAuthor = ref<string>('')
+let songAlbum = ref<string>('')
+let songLyric = ref<{time:number,text:string}[]>([])
+let currentIndex = ref<number>(-1)   //当前选中的歌词索引，先是-1（取不到）
 //获取歌曲详情
 const getSong = (id: number) => {
     //获取封面，歌名，歌手和专辑
@@ -128,14 +128,14 @@ const getSong = (id: number) => {
         // console.log(data)
         songCover.value = data.songs[0]?.al?.picUrl || 'https://tse1-mm.cn.bing.net/th/id/OIP-C.LVkCQLB0TS18zQxTvW-WJAAAAA?o=7rm=3&rs=1&pid=ImgDetMain&o=7&rm=3'
         songName.value = data.songs[0]?.name || '正在播放的歌曲'
-        songAuthor.value = data.songs[0]?.ar?.map((item: any) => item.name).join('/') || '歌手'
+        songAuthor.value = data.songs[0]?.ar?.map((item: {name:string}) => item.name).join('/') || '歌手'
         songAlbum.value = data.songs[0]?.al?.name || '专辑'
         // console.log(songCover.value, songName.value, songAuthor.value,songAlbum.value)
         //获取歌曲详情成功后才获取歌词
         getLyric(id).then(res => {
             // console.log(res)
             const data = res.data
-            // console.log(data)
+            console.log(data)
             songLyric.value = handleLyric(data.lrc.lyric)   //result赋值给了songLyric.value
             // console.log(songLyric.value)
         })
@@ -155,13 +155,13 @@ const getSong = (id: number) => {
 }
 
 //整合歌词
-const handleLyric = (lyric: any) => {
+const handleLyric = (lyric: string) => {
     // console.log(lyric)
     const lines = lyric.split('\n')
-    // console.log(lines)
-    const result: any[] = []   //最后整合完的数据
+    console.log(lines)
+    const result: {time:number,text:string}[] = []   //最后整合完的数据
     const timeReg = /\[(\d{2}):(\d{2})(?:\.(\d{2,3}))?\]/  // 匹配 [00:12.00] 或 [00:12.000]
-    lines.map((item: any) => {
+    lines.map((item: string) => {
         const match = timeReg.exec(item)
         // console.log(match)
         if (match) {
@@ -179,18 +179,18 @@ const handleLyric = (lyric: any) => {
         }
         return result
     })
-    result.sort((a, b) => a.time - b.time)   //根据时间排序
-    // console.log(result)   //获取到了整合的数据
+    result.sort((a:{time:number}, b:{time:number}) => a.time - b.time)   //根据时间排序
+    // console.log(result)   //获取到了整合的数据,也就是lyric
     return result
 }
 
 
 //播放数据
-let isPlay = ref(false)
-let currentTime = ref('')
-let totalTime = ref('')
-let audioUrl = ref('')
-let audioRef = ref<any>(null)
+let isPlay = ref<boolean>(false)
+let currentTime = ref<string>('')
+let totalTime = ref<string>('')
+let audioUrl = ref<string>('')
+let audioRef = ref<HTMLAudioElement|null>(null)
 let activeRef = ref<any>(null)   //当前的歌词，用于滚动
 const getUrl = (id: number) => {
     getPlayUrl(id).then(res => {
@@ -201,7 +201,7 @@ const getUrl = (id: number) => {
 
     })
         .catch(err => {
-            ElMessage.error(("获取播放地址失败,"+(err.response?.data?.message || err.response?.data?.msg))||'获取播放地址失败')
+            ElMessage.error((err.response?.data?.message || err.response?.data?.msg)||'获取播放地址失败')
             console.log('获取播放地址失败：' + err)
         })
 }
@@ -223,7 +223,7 @@ const handlePlay = () => {
         audio.play().then(() => {
             isPlay.value = true
         })
-            .catch((err: any) => {
+            .catch(err=> {
                 ElMessage.error('播放失败')
                 console.log('播放失败' + err)
             })
@@ -243,7 +243,7 @@ const handleTimeupdate = () => {
     currentTime.value = dayjs(Math.floor(Number(audio.currentTime) * 1000)).format('mm:ss') || '00:00'
     // console.log(audio.currentTime)
     // console.log(songLyric.value)
-    songLyric.value.forEach((item: any, index: number) => {
+    songLyric.value.forEach((item:{time:number}, index: number) => {
         // console.log(item.time)
         if (item.time <= audio.currentTime) {
             // console.log(item)
@@ -275,9 +275,10 @@ const progressWidth = computed(() => {
 })
 
 //进度条点击事件
-const handleProgress = (e: any) => {
+const handleProgress = (e:MouseEvent)  => {
     // console.log(e.currentTarget)   //点击事件绑定的那个元素
-    const bar = e.currentTarget
+    const bar = e.currentTarget as HTMLElement
+    if (!bar) return
     const rect = bar.getBoundingClientRect()
     // console.log(rect)   //元素的宽高，和边界和视口的距离
     // console.log(e.clientX)  //点击的位置到左边视口的距离
@@ -323,11 +324,17 @@ const getSimilar = (id: number) => {
     getSimilarSongs(id).then(res => {
         const { data: { songs } } = res
         console.log(songs)
-        similarSong.value = songs.map((item: any, index: number) => {
+        similarSong.value = songs.map((item:{
+            id:number,
+            name:string,
+            artists:{name:string}[],
+            duration:number,
+            album:{name:string}}, 
+             index: number) => {
             return {
                 id: item.id,
                 name: item.name,
-                author: item.artists?.map((item: any) => item.name).join('/') || '',
+                author: item.artists?.map((item: {name:string}) => item.name).join('/') || '',
                 time: item.duration || 0,
                 album: item.album?.name || '',
                 index: index + 1
@@ -337,7 +344,7 @@ const getSimilar = (id: number) => {
         similarLoading.value = false
     })
         .catch(err => {
-            ElMessage.error(("获取相似歌曲失败,"+(err.response?.data?.message || err.response?.data?.msg))||'获取相似歌曲失败')
+            ElMessage.error((err.response?.data?.message || err.response?.data?.msg)||'获取相似歌曲失败')
             console.log('获取相似歌曲失败：' + err)
             similarLoading.value = false
         })
@@ -358,30 +365,30 @@ const handleLike = () => {
             console.log(res)
             isLike.value = false
             //取消喜欢成功后，刷新喜欢列表
-            getLikeList(userStore.user.id)
+            getLikeList(userStore.user?.id||0)
 
         })
             .catch(err => {
-                ElMessage.error(("取消喜欢失败,"+(err.response?.data?.message || err.response?.data?.msg))||'取消喜欢失败')
+                ElMessage.error((err.response?.data?.message || err.response?.data?.msg)||'取消喜欢失败')
                 isLike.value = true
                 //取消喜欢失败后，刷新喜欢列表
-                getLikeList(userStore.user.id)
+                getLikeList(userStore.user?.id||0)
                 console.log('取消喜欢失败：' + err)
             })
     }
     else {
         // console.log('将要喜欢')
         likeSong(Number(id.value), true).then(res => {
-            console.log(res)
+            // console.log(res)
             isLike.value = true
             //喜欢成功后，刷新喜欢列表
-            getLikeList(userStore.user.id)
+            getLikeList(userStore.user?.id||0)
         })
             .catch(err => {
-                ElMessage.error(("喜欢失败,"+(err.response?.data?.message || err.response?.data?.msg))||'喜欢失败')
+                ElMessage.error((err.response?.data?.message || err.response?.data?.msg)||'喜欢失败')
                 isLike.value = false
                 //喜欢失败后，刷新喜欢列表
-                getLikeList(userStore.user.id)
+                getLikeList(userStore.user?.id||0)
                 console.log('喜欢失败：' + err)
             })
     }
@@ -407,7 +414,7 @@ onMounted(() => {
     // console.log((Number(id.value)))
     getSong(Number(id.value))
     if (userStore.isLogin) {
-        getLikeList(userStore.user.id).then(res => {
+        getLikeList(userStore.user?.id||0).then(res => {
             const { data: { ids } } = res
             // console.log(ids)
             const index = ids.findIndex((item: number) => item === Number(id.value))
@@ -420,7 +427,7 @@ onMounted(() => {
             // console.log(isLike.value)
         })
             .catch(err => {
-                ElMessage.error('获取喜欢列表失败,' + (err.response?.data?.message || err.response?.data?.msg))
+                ElMessage.error((err.response?.data?.message || err.response?.data?.msg)||'获取喜欢列表失败')   
                 console.log('获取喜欢列表失败：' + err)
             })
     }

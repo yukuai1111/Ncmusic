@@ -22,9 +22,9 @@ const router = useRouter()
 const id = computed(() => Number(route.query.id))
 
 
-const loading = ref(false)
+const loading = ref<boolean>(false)
 
-const mvUrl = ref('')
+const mvUrl = ref<string>('')
 const getMv = (id: number) => {
     if (!id) return
     loading.value = true
@@ -35,7 +35,7 @@ const getMv = (id: number) => {
         loading.value = false
     })
         .catch(err => {
-            ElMessage.error(("播放MV失败,"+(err.response?.data?.message||err.response?.data?.msg))||'播放MV失败')
+            ElMessage.error((err.response?.data?.message||err.response?.data?.msg)||'播放MV失败')
             console.log("播放MV失败：" + err)
             loading.value = false
         })

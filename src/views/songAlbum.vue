@@ -28,7 +28,7 @@ import router from '@/router'
 const route = useRoute()
 const id = computed(() => route.query.id)
 
-const albumLoading = ref(false)
+const albumLoading = ref<boolean>(false)
 //专辑数据
 const albums = ref<{ id: number, name: string, transNames: string, cover: string, publishTime: number, size: number }[]>([])
 const getAlbum = (id: number) => {
@@ -36,12 +36,12 @@ const getAlbum = (id: number) => {
     albumLoading.value = true
     getSingerAlbum(id, 20).then(res => {
         const { data: { hotAlbums } } = res
-        // console.log(hotAlbums)
-        albums.value = hotAlbums.map((item: any) => {
+        console.log(hotAlbums)
+        albums.value = hotAlbums.map((item: {id: number, name: string, transNames: string[], picUrl: string, publishTime: number, size: number}) => {
             return {
                 id: item.id,
                 name: item.name,
-                transNames: item.transNames?.map((item: any) => item).join('/') || '',
+                transNames: item.transNames?.map((item: string) => item).join('/') || '',
                 cover: item.picUrl || '',
                 publishTime: item.publishTime || '',
                 size: item.size || ''
@@ -51,7 +51,7 @@ const getAlbum = (id: number) => {
         albumLoading.value = false
     })
         .catch(err => {
-            ElMessage.error(("获取专辑失败,"+(err.response?.data?.message||err.response?.data?.msg))||'获取专辑失败')
+            ElMessage.error((err.response?.data?.message || err.response?.data?.msg)||'获取专辑失败')
             console.log('获取专辑失败：' + err)
             albumLoading.value = false
         })

@@ -33,12 +33,12 @@
                                 <span>{{ comment.like }}</span>
                             </span>
                             <span class="action-btn">
-                                <span v-if="comment.userId === userStore.user.id"
+                                <span v-if="comment.userId === userStore.user?.id"
                                     @click="handleDelete(comment.commentId)">
                                     <el-icon size="17">
                                         <Delete />
                                     </el-icon></span>
-                            </span> 
+                            </span>
                         </div>
                     </div>
                 </div>
@@ -70,10 +70,10 @@ const router = useRouter()
 const routeId = computed(() => Number(route.query.id))
 const userStore = useUserStore()
 //评论加载中
-const loading = ref(false)
+const loading = ref<boolean>(false)
 
 //总数据
-const total = ref(0)
+const total = ref<number>(0)
 //原有评论数据
 const commentList = ref<{
     commentId: number,
@@ -81,13 +81,13 @@ const commentList = ref<{
     userAvatar: string,
     userName: string,
     content: string,
-    time: string,
+    time: number,
     like: number | string,
     liked: boolean,
 }[]>([])
 
 //当前页码
-const currentPage = ref(1)
+const currentPage = ref<number>(1)
 //每页显示数量
 const pageSize = 10
 //获取评论
@@ -101,7 +101,18 @@ const getCommentList = (id: number) => {
         const { data: { comments } } = res
         total.value = hotComments.length + comments.length
         // console.log(hotComments)
-        commentList.value = hotComments.map((item: any) => {
+        commentList.value = hotComments.map((item: {
+            commentId: number,
+            user: {
+                userId: number,
+                avatarUrl: string,
+                nickname: string
+            },
+            content: string,
+            time: number,
+            likedCount: number,
+            liked: boolean
+        }) => {
             return {
                 commentId: item.commentId,
                 userId: item.user.userId,
@@ -109,11 +120,22 @@ const getCommentList = (id: number) => {
                 userName: item.user.nickname,
                 content: item.content,
                 time: item.time,
-                like: item.likedCount,
+                like: item.likedCount >= 10000 ? (item.likedCount / 10000).toFixed(2) + '万' : item.likedCount,
                 liked: item.liked,
             }
         })
-        commentList.value.push(...comments.map((item: any) => {
+        commentList.value.push(...comments.map((item: {
+            commentId: number,
+            user: {
+                userId: number,
+                avatarUrl: string,
+                nickname: string
+            },
+            content: string,
+            time: number,
+            likedCount: number,
+            liked: boolean
+        }) => {
             return {
                 commentId: item.commentId,
                 userId: item.user.userId,
@@ -121,20 +143,15 @@ const getCommentList = (id: number) => {
                 userName: item.user.nickname,
                 content: item.content,
                 time: item.time,
-                like: item.likedCount,
+                like: item.likedCount >= 10000 ? (item.likedCount / 10000).toFixed(2) + '万' : item.likedCount,
                 liked: item.liked,
             }
         }))
-        // console.log(sort.value)
-        commentList.value.forEach((item: any) => {
-            if (item.like >= 10000) {
-                item.like = (item.like / 10000).toFixed(2) + '万'
-            }
-        })
+
 
         if (sort.value === '1') {
             // //按点赞排序
-            commentList.value = commentList.value.sort((a: any, b: any) => {
+            commentList.value = commentList.value.sort((a: {like: number | string}, b: {like: number | string}) => {
                 return Number(b.like) - Number(a.like)
             })
 
@@ -146,7 +163,7 @@ const getCommentList = (id: number) => {
             // console.log(commentList.value, total.value)
         } else {
             // //按时间排序
-            commentList.value = commentList.value.sort((a: any, b: any) => {
+            commentList.value = commentList.value.sort((a: {time: number}, b: {time: number}) => {
                 return b.time - a.time
             })
 
@@ -160,7 +177,7 @@ const getCommentList = (id: number) => {
 
     })
         .catch(err => {
-            ElMessage.error(("获取评论失败,"+(err.response?.data?.message||err.response?.data?.msg))||'获取评论失败')
+            ElMessage.error((err.response?.data?.message || err.response?.data?.msg) || '获取评论失败')
             console.log('获取评论失败：' + err)
             commentList.value = []
             loading.value = false
@@ -173,7 +190,7 @@ const handlePage = () => {
 }
 
 //排序方式
-const sort = ref('1')
+const sort = ref<string>('1')
 //切换排序
 const handleSort = (id: number) => {
     if (!id) return
@@ -205,7 +222,7 @@ const handleLike = (comment: { commentId: number, liked: boolean, like: number |
                 }
             }
         }).catch(err => {
-            ElMessage.error(("点赞评论失败,"+(err.response?.data?.message||err.response?.data?.msg))||'点赞评论失败')
+            ElMessage.error(("点赞评论失败," + (err.response?.data?.message || err.response?.data?.msg)) || '点赞评论失败')
             console.log('点赞评论失败：' + err)
         })
     }
@@ -225,14 +242,14 @@ const handleLike = (comment: { commentId: number, liked: boolean, like: number |
                 }
             }
         }).catch(err => {
-            ElMessage.error(("取消点赞评论失败,"+(err.response?.data?.message||err.response?.data?.msg))||'取消点赞评论失败')
+            ElMessage.error((err.response?.data?.message || err.response?.data?.msg) || '取消点赞评论失败')
             console.log('取消点赞评论失败：' + err)
         })
     }
 }
 
 //输入的新评论
-const newComment = ref('')
+const newComment = ref<string>('')
 //发送评论
 const handleSend = () => {
     if (newComment.value.trim().length === 0) return
@@ -259,7 +276,7 @@ const handleDelete = (commentId: number) => {
             getCommentList(routeId.value)
         }
     }).catch(err => {
-        ElMessage.error(("删除评论失败,"+(err.response?.data?.message||err.response?.data?.msg))||'删除评论失败')
+        ElMessage.error((err.response?.data?.message || err.response?.data?.msg) || '删除评论失败')
         console.log('删除评论失败：' + err)
     })
 }

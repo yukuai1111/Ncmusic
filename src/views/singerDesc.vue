@@ -37,12 +37,12 @@ import { ElMessage } from 'element-plus'
 
 const route = useRoute()
 const id = computed(() => route.query.id)
-const workLoading = ref(false)
-const honorLoading = ref(false)
-const exprienceLoading = ref(false)
+const workLoading = ref<boolean>(false)
+const honorLoading = ref<boolean>(false)
+const exprienceLoading = ref<boolean>(false)
 
 //歌手描述
-const singerDesc = ref<any>({})
+const singerDesc = ref<{works?:string[],honor?:string[],exprience?:string[]}>({})
 const getSingerDescData = (id: number) => {
     if (!id) return
     workLoading.value = true
@@ -50,16 +50,16 @@ const getSingerDescData = (id: number) => {
     exprienceLoading.value = true
     getSingerDesc(id).then(res => {
         const data = res.data
-        // console.log(data)
+        console.log(data)
         singerDesc.value = {
-            works: data.introduction.filter((item: any) => item.ti === '代表作品')?.map((item: any) => item.txt)[0]?.
+            works: data.introduction.filter((item: {ti:string}) => item.ti === '代表作品')?.map((item: {txt:string}) => item.txt)[0]?.
                 replace(/●/g, '').   //去掉●
                 replace(/。/g, '').   //去掉。
                 replace(/\n/g, '、'). //换行符换成、
                 split('、')    //分割成数组
                 || [],
-            honor: data.introduction.filter((item: any) => item.ti === '主要成就')?.map((item: any) => item.txt)[0]?.split('\n') || [],
-            exprience: data.introduction.filter((item: any) => item.ti === '演艺经历')?.map((item: any) => item.txt)[0]?.split('\n') || []
+            honor: data.introduction.filter((item: {ti:string}) => item.ti === '主要成就')?.map((item: {txt:string}) => item.txt)[0]?.split('\n') || [],
+            exprience: data.introduction.filter((item: {ti:string}) => item.ti === '演艺经历')?.map((item: {txt:string}) => item.txt)[0]?.split('\n') || []
         }
         // console.log(singerDesc.value)
         workLoading.value = false
@@ -67,7 +67,7 @@ const getSingerDescData = (id: number) => {
         exprienceLoading.value = false
     }).catch(err => {
         console.log("获取歌手描述失败：" + err)
-        ElMessage.error(("获取歌手描述失败,"+(err.response?.data?.message||err.response?.data?.msg))||'获取歌手描述失败')
+        ElMessage.error((err.response?.data?.message || err.response?.data?.msg)||'获取歌手描述失败')
         workLoading.value = false
         honorLoading.value = false
         exprienceLoading.value = false

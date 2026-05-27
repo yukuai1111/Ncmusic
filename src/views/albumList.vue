@@ -34,20 +34,20 @@ const route = useRoute()
 const router = useRouter()
 const id = computed(() => Number(route.query.id))
 
-const listLoading = ref(false)
+const listLoading = ref<boolean>(false)
 
 
 
 //专辑歌曲数据
 const albumList = ref<{ id: number, name: string, author: string, time: number, index: number }[]>([])
-const alName=ref('')
+const alName=ref<string>('')
 const getAlbumList = (id: number) => {
     if (!id) return
     listLoading.value = true
     //获取专辑详情
     getAlbumDetail(id).then(res => {
         const { data: { songs } } = res
-        console.log(songs)
+        // console.log(songs)
         alName.value=songs[0].al?.name||''
 
         albumList.value = songs.map((item: any, index: number) => {
@@ -59,11 +59,11 @@ const getAlbumList = (id: number) => {
                 index: index + 1
             }
         })
-        console.log(albumList.value)
+        // console.log(albumList.value)
         listLoading.value = false
     })
         .catch(err => {
-            ElMessage.error(('获取专辑详情失败,'+(err.response?.data?.message||err.response?.data?.msg))||'获取专辑详情失败')
+            ElMessage.error((err.response?.data?.message||err.response?.data?.msg)||'获取专辑详情失败')
             console.log("获取专辑详情失败" + err)
             listLoading.value = false
         })

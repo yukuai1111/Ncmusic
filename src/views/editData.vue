@@ -3,7 +3,7 @@
         <div class="edit-inner">
             <el-form :model="ruleForm" label-width="auto" style="max-width: 80%" :rules="rules">
                 <el-form-item label="ID" class="edit-item" label-position="left" prop="id">
-                    <el-input disabled :value="useUser.user.id" />
+                    <el-input disabled :value="useUser?.user?.id || 0" />
                 </el-form-item>
 
                 <el-form-item label="昵称" class="edit-item" label-position="left" prop="nickname">
@@ -86,7 +86,7 @@ const useUser = useUserStore()
 
 //表单数据
 const ruleForm = reactive({
-    id: useUser.user.id,
+    id: useUser?.user?.id || 0,
     nickname: '',
     gender: '',
     birthday: 0,
@@ -96,16 +96,17 @@ const ruleForm = reactive({
     level: 0,
     age: 0,
 })
+
 //定义所有省份和城市
-const provinces = ref<{ label: string, value: string }[]>([])
-const cities = ref<any>([])
+const provinces = ref<{ label: string, value: string }[]|undefined>(undefined)
+const cities = ref<{ label: string, value: string }[]|undefined>(undefined)
 
 //获取基本数据
 const getBasic = (id: number) => {
     if (!id) return
     getBasicData(id).then(async res => {
         const data = res.data
-        // console.log(data)
+        console.log(data)
         ruleForm.nickname = data.profile.nickname || ''
         ruleForm.gender = data.profile.gender === 0 ? '保密' : (data.profile.gender === 1 ? '男' : '女')
         ruleForm.birthday = data.profile.birthday
@@ -123,7 +124,7 @@ const getBasic = (id: number) => {
         ruleForm.signature = data.profile.signature || ''
     }).catch(err => {
         console.log("获取基本数据失败：" + err)
-        ElMessage.error(("获取基本数据失败,"+(err.response?.data?.message||err.response?.data?.msg))||'获取基本数据失败')
+        ElMessage.error((err.response?.data?.message||err.response?.data?.msg)||'获取基本数据失败')
 
     })
 }
@@ -157,10 +158,10 @@ const handleSubmit = () => {
         return
     } else {
         //判断有没有重复
-        console.log(ruleForm.nickname)
+        // console.log(ruleForm.nickname)
         checkNickname(ruleForm.nickname).then(res => {
-            console.log(res)
-            console.log(res.data.candidateNicknames)   //备用名字
+            // console.log(res)
+            // console.log(res.data.candidateNicknames)   //备用名字
             if (res.data.duplicated) {
                 candidateNicknames.value = res.data.candidateNicknames
                 ElMessage.error("昵称已存在")
@@ -202,27 +203,27 @@ const handleSubmit = () => {
                     ruleForm.gender = "2"
                 }
                 // console.log(ruleForm.gender)
-                console.log(ruleForm)
+                // console.log(ruleForm)
                 updateUserInfo(ruleForm).then(res => {
                     const data = res.data
                     // console.log(data)
                     if (data.code === 200) {
-                        console.log('更新')
+                        // console.log('更新')
                         useUser.setUser({
-                            id: useUser.user.id || '',
+                            id: useUser?.user?.id || 0,
                             name: ruleForm.nickname,
-                            avatar: useUser.user.avatar || '',
+                            avatar: useUser?.user?.avatar || '',
                         })
                         ElMessage.success("更新成功")
                         router.push('/selfCenter')
                     }
                     else {
-                        ElMessage.error("更新失败")
+                        ElMessage.error((data.msg||data.message||"更新失败"))
                     }
                 })
                     .catch(err => {
                         console.log("更新用户信息失败：" + err)
-                        ElMessage.error(("更新用户信息失败,"+(err.response?.data?.message||err.response?.data?.msg))||'更新用户信息失败')
+                        ElMessage.error((err.response?.data?.message||err.response?.data?.msg)||'更新用户信息失败')
                     })
             }
         })
@@ -235,19 +236,24 @@ const handleClose = () => {
     router.push('/selfCenter')
 }
 
-
+//定义省份接口
+interface ProvinceInterface{
+    value:string,
+    label:string,
+    children?:{value:string,label:string}[]
+}
 //省份变化时，修改城市
 const provinceChange = (code: string) => {
     //清空城市
     ruleForm.city = ''
     // console.log(code.slice(0, 2))  //省份的编码
-    const filterProvince: any = provinceAndCityData.filter((item: any) => item.value === code.slice(0, 2))[0]
+    const filterProvince:ProvinceInterface|undefined = provinceAndCityData.filter((item:{label:string,value:string}) => item.value === code.slice(0, 2))[0]
     if (!filterProvince) {
         ElMessage.error("请选择正确的省份")
         return
     }
-    // console.log(filterProvince.children) //省份对应的城市
-    cities.value = filterProvince.children.map((item: any) => {
+    // console.log(filterProvince) //省份对应的城市
+    cities.value = filterProvince.children?.map((item:{value:string,label:string}) => {
         return {
             label: item.label,
             value: item.value + "00"
@@ -260,13 +266,13 @@ const provinceChange = (code: string) => {
 const handleNickName = (item: string) => {
     ruleForm.nickname = item
     candidateNicknames.value = []
-    console.log(ruleForm)
+    // console.log(ruleForm)
 }
 onMounted(() => {
-    if (useUser.isLogin && useUser.user.id) {
-        getBasic(useUser.user.id)
+    if (useUser.isLogin && useUser?.user?.id) {
+        getBasic(useUser?.user?.id)
         // console.log(provinceAndCityData)  //所有省份+城市
-        provinces.value = provinceAndCityData.map((item: any) => {
+        provinces.value = provinceAndCityData.map((item:{label:string,value:string}) => {
             return {
                 label: item.label,   //省的名字
                 value: item.value + '0000'    //省的id

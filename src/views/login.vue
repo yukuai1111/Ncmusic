@@ -38,8 +38,8 @@ const router = useRouter()
 
 
 //二维码数据
-const Qrimg = ref('')   //图片
-const Qrkey = ref('')   //key
+const Qrimg = ref<string>('')   //图片
+const Qrkey = ref<string>('')   //key
 
 
 //获取key
@@ -50,7 +50,7 @@ const getQrCode = () => {
         Qrkey.value = data.unikey || ''
     })
         .catch(err => {
-            ElMessage.error(("获取二维码失败,"+(err.response?.data?.message||err.response?.data?.msg))||'获取二维码失败')
+            ElMessage.error((err.response?.data?.message||err.response?.data?.msg)||'获取二维码失败')
             console.log(err)
         })
 }
@@ -63,7 +63,7 @@ const getQrImg = (key: string) => {
         Qrimg.value = data.qrimg || ''
     })
         .catch(err => {
-            ElMessage.error(("获取二维码失败,"+(err.response?.data?.message||err.response?.data?.msg))||'获取二维码失败')
+            ElMessage.error((err.response?.data?.message||err.response?.data?.msg)||'获取二维码失败')
             console.log(err)
         })
 }
@@ -72,7 +72,7 @@ const getQrImg = (key: string) => {
 
 //对于检查二维码状态，用户登陆时间不知道，所以采用轮询
 //定义一个定时器
-let timer = ref<any>(null)   //用于防止重复轮询
+let timer = ref<number|null>(null)   //用于防止重复轮询
 const checkQrStatus = (key: string) => {
     if (!key) return
     //如果一开始有定时器，先关掉
@@ -86,7 +86,7 @@ const checkQrStatus = (key: string) => {
             // console.log(res.data.code)
             if (res.data.code === 803) {
                 getLoginStatus().then(res => {
-                    console.log(res)
+                    // console.log(res)
                     const { data: { data } } = res
                     // console.log(data.profile)
                     if (data.profile) {
@@ -101,22 +101,22 @@ const checkQrStatus = (key: string) => {
                     }
                 })
                     .catch(err => {
-                        ElMessage.error(("登陆失败,"+(err.response?.data?.message||err.response?.data?.msg))||'登陆失败')
+                        ElMessage.error((err.response?.data?.message||err.response?.data?.msg)||'登陆失败')
                         console.log('获取登录状态失败：' + err)
                     })
-                clearInterval(timer.value)
+                clearInterval(timer?.value || 0)
                 timer.value = null
             }
             if (res.data.code === 800) {
                 //过期重新获取二维码，包括 key 和 img，然后继续检查
-                clearInterval(timer.value)
+                clearInterval(timer?.value || 0)
                 timer.value = null
                 getQrCode()
                 getQrImg(key)
                 checkQrStatus(key)
             }
         }).catch(err => {
-            ElMessage.error(("检查二维码状态失败,"+(err.response?.data?.message||err.response?.data?.msg))||'检查二维码状态失败')
+            ElMessage.error((err.response?.data?.message||err.response?.data?.msg)||'检查二维码状态失败')
             console.log('检查二维码状态失败：' + err)
         })
     }, 3000)
@@ -153,7 +153,7 @@ onMounted(() => {
 
 //卸载时，清除轮询
 onUnmounted(()=>{
-    clearInterval(timer.value)
+    clearInterval(timer?.value || 0)
     timer.value = null
 })
 </script>

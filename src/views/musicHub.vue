@@ -60,27 +60,26 @@ let recommendList = ref<{
     desc: string
 }[]>([])   //ref<内部数据的类型>[]（初始值）   //数组里面是对象（初始值是空数组）
 //定义推荐列表加载中
-let recommendLoading=ref(false)
+let recommendLoading=ref<boolean>(false)
 //获取推荐歌单
 const getRecommendList = () => {
     recommendLoading.value =true
     getRecommend(5).then(res => {
         const { result } = res.data
         // console.log(result)
-        recommendList.value = result.map((item: any) => {
+        recommendList.value = result.map((item: {id:number,name:string,picUrl:string,copywriter:string}) => {
             return {
                 id: item.id,
                 name: item.name,
                 cover: item.picUrl,
                 desc: item.copywriter || ''
             }
-
         }) || []
         // console.log(recommendList.value)
         recommendLoading.value =false
     })
         .catch(err => {
-            ElMessage.error(("获取推荐列表失败,"+(err.response?.data?.message||err.response?.data?.msg))||'获取推荐列表失败')
+            ElMessage.error((err.response?.data?.message||err.response?.data?.msg)||'获取推荐列表失败')
             console.log('获取推荐列表失败：' + err)
             recommendLoading.value =false
         })
@@ -95,7 +94,7 @@ let newSongList = ref<{
     author: string
 }[]>([])
 //定义新音乐加载中
-let newSongLoading=ref(false)
+let newSongLoading=ref<boolean>(false)
 //获取新音乐
 const getNewSongList = () => {
     newSongLoading.value =true
@@ -103,19 +102,19 @@ const getNewSongList = () => {
         // console.log(res.data)
         const { result } = res.data
         // console.log(result)
-        newSongList.value = result.map((item: any) => {
+        newSongList.value = result.map((item:{id:number,name:string,picUrl:string,song:{artists:{name:string}[]}}) => {
             return {
                 id: item.id,
                 name: item.name,
                 cover: item.picUrl,
-                author: item.song.artists.map((item:any)=>item.name).join('/')|| ''
+                author: item.song.artists.map((item:{name:string})=>item.name).join('/')|| ''
             }
-        }) || []
+        }) || []    
         // console.log(newSongList.value)
         newSongLoading.value =false
     })
         .catch(err => {
-            ElMessage.error(("获取新音乐失败,"+(err.response?.data?.message||err.response?.data?.msg))||'获取新音乐失败')
+            ElMessage.error((err.response?.data?.message||err.response?.data?.msg)||'获取新音乐失败')
             console.log('获取新音乐失败：' + err)   
             newSongLoading.value =false
         })
@@ -125,11 +124,11 @@ const getNewSongList = () => {
 //定义歌手榜单数据
 let singerList = ref<{ id: number, name: string, avatar: string }[]>([])
 //当前页数
-let currentPage = ref(1)
+let currentPage = ref<number>(1)
 //每页的数量
 const pageSize = 5
 //定义歌手榜单加载中
-let singerLoading=ref(false)
+let singerLoading=ref<boolean>(false)
 //获取歌手榜单
 const getSingerList = () => {
     singerLoading.value =true
@@ -141,7 +140,7 @@ const getSingerList = () => {
     getSingers(30).then(res => {
         // console.log(res.data)
         const { artists } = res.data
-        singerList.value = artists.map((item: any) => {
+        singerList.value = artists.map((item: {id:number,name:string,picUrl:string}) => {
             return {
                 id: item.id,
                 name: item.name,
@@ -153,7 +152,7 @@ const getSingerList = () => {
         singerLoading.value =false
     })
         .catch(err => {
-            ElMessage.error(("获取歌手榜单失败,"+(err.response?.data?.message||err.response?.data?.msg))||'获取歌手榜单失败')
+            ElMessage.error((err.response?.data?.message||err.response?.data?.msg)||'获取歌手榜单失败')
             console.log('获取歌手榜单失败：' + err)   
             singerLoading.value =false
         })
